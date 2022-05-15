@@ -1,0 +1,6 @@
+#+title: Emacsploit
+
+A search tool for Exploit-DB
+
+#+attr_org: :width 600px
+[[file:screenshot.png]]
