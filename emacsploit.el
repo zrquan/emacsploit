@@ -30,7 +30,7 @@
     (emacsploit-search-by-id (string-to-number id))))
 
 (define-derived-mode emacsploit-list-mode tabulated-list-mode "Exploit-db"
-  (setq tabulated-list-format [("Date" 15 nil) ("Title" 0 nil)]
+  (setq tabulated-list-format [("Date" 12 nil) ("Type" 10 nil) ("Title" 0 nil)]
         tabulated-list-padding 2
         tabulated-list-sort-key nil)
   (tabulated-list-init-header))
@@ -39,8 +39,9 @@
   (let* ((desc (cdr (assoc 'description data)))
          (edb-id (aref desc 0))
          (title (aref desc 1))
-         (date (cdr (assoc 'date_published data))))
-    (list edb-id (vector date (emacsploit-decode-entities title)))))
+         (date (cdr (assoc 'date_published data)))
+         (type (cdr (assoc 'type_id data))))
+    (list edb-id (vector date type (emacsploit-decode-entities title)))))
 
 (defun emacsploit-decode-entities (html)
   (with-temp-buffer
