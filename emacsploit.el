@@ -17,6 +17,14 @@
 (require 'xml)
 (require 'json)
 
+(defvar emacsploit-supported-langs '((python-mode . "py")
+                                     (ruby-mode . "rb")
+                                     (html-mode . "html")
+                                     (text-mode . "txt"))
+  "Mapping between major-modes and language class.
+Used to select appropriate mode from fetched exploit (based on class)."
+  )
+
 (defvar emacsploit-list-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map tabulated-list-mode-map)
@@ -167,20 +175,20 @@
           (rename-buffer exp-buffer-name t)
           (goto-char (point-min))
 
-          (save-excursion
-            (search-forward-regexp "<code[^>]*>")
-            (delete-region (point-min) (point))
-            (search-forward-regexp "</code>")
-            (backward-char 7)
-            (delete-region (point) (point-max)))
+          (save-match-data
+            (and (string-match "<code class=\"language-\\(\\w+\\)\"[^>]*>\\([\0-\377[:nonascii:]]*\\)</code>"
+                               (buffer-string))
+                 (let* ((lang (match-string 1 (buffer-string)))
+                        (content (match-string 2 (buffer-string)))
+                        (mode (car (rassoc lang emacsploit-supported-langs))))
+                   (erase-buffer)
+                   (insert content)
+                   (goto-char (point-min))
+                   (save-excursion (xml-parse-string))
+                   (if (fboundp mode)
+                       (funcall mode)
+                     (text-mode)))))
 
-          (save-excursion (xml-parse-string))
-
-          (save-excursion
-            (while (re-search-forward "\r" nil :noerror)
-              (replace-match "")))
-
-          (text-mode)
           (set-buffer-modified-p nil))
         (switch-to-buffer-other-window exp-buffer)))))
 
